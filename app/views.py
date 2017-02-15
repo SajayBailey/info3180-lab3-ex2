@@ -4,10 +4,13 @@ Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
-
+import smtplib
 from app import app
-from flask import render_template, request, redirect, url_for
+from send_email import send_email
+from flask import Flask, flash, render_template, request, redirect, url_for
 
+#Secret keky
+app.secret_key = "Super_Ksecret K@y"
 
 ###
 # Routing for your application.
@@ -22,12 +25,34 @@ def home():
 @app.route('/about/')
 def about():
     """Render the website's about page."""
-    return render_template('about.html', name="Mary Jane")
+    return render_template('about.html', name="INFO3180-LAB3")
+    
+
+@app.route("/contact", methods=['GET','POST'])
+def contact():
+    if request.method =='POST':
+        to_name = request.form['name']  
+        to_email = request.form['email']
+        subject = request.form['subject']
+        msg = request.form['message']
+        send_email(to_name, to_email, subject, msg)
+        
+        if send_email(to_name, to_email, subject, msg):
+            flash('Success!!!')
+            return redirect(url_for('home'))
+        else:
+            flash('Email was not sent')
+            
+    else:
+        return render_template("contact.html")
+
+
 
 
 ###
 # The functions below should be applicable to all Flask apps.
 ###
+    
 
 @app.route('/<file_name>.txt')
 def send_text_file(file_name):
